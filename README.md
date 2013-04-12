@@ -1,4 +1,4 @@
-== Some fun JavaScript snippets
+Some fun JavaScript snippets
 
 * __class_extensions__ #=> make easier to write/read :)
 * __helpers__ #=> some worthless snippets
