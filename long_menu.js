@@ -1,7 +1,8 @@
 /**
  * Works on a markup that looks something like this (only longer):
- *  <ul class="dropdown-toggle controlled">
- *     <li>Header</li>
+ *  <a href="#" class="menu-header dropdown-toggle" data-toggle="dropdown">Open Menu</a>
+ *  <ul class="dropdown-menu controlled">
+ *     <li>Menu Header</li>
  *     <li class="controllable"><a href="#">Item 1</a></li>
  *     <li class="controllable"><a href="#">Item 2</a></li>
  *     <li class="controllable"><a href="#">Item 3</a></li>
@@ -11,7 +12,6 @@
  *  </ul>
  * @constructor
  */
-
 function LongMenu() {
     var menu = this;
 
