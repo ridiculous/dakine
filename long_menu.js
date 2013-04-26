@@ -3,9 +3,8 @@ function LongMenu() {
 
     this.$master = $('.controlled');
     this.$items = this.$master.find('.controllable');
-    this.item_height = 26; // pre-determined height for each list item
     this.moving = null;
-    this.allowed_items = Math.ceil(this.$master.height() / this.item_height); 
+    this.allowed_items = 0;
 
     this.moveUp = function () {
         var available_items = this.$items.filter(':visible');
@@ -46,13 +45,12 @@ $(function () {
         return;
     }
 
-    menu.hideOverflow();
     menu.$master.hover(function () {
 
         $(this)
-            .css('width', $(this).width() + 'px') // maintain original width
-            .off()                                // avoid double binding
+            .off()
             .on('mousemove', function (e) {
+                // TODO: calculate this dynamically based on UL position on page
                 if (e.clientY < 187 && e.clientY > 144) {
                     menu.moveDown();
                 } else if (e.clientY < 567 && e.clientY > 525) {
@@ -66,7 +64,12 @@ $(function () {
         clearTimeout(menu.moving);
     });
 
-    $('.dropdown-toggle).on('click', function () {
+    $('.menu-header').on('click', function () {
+        // only do this the first time
+        if (!menu.allowed_items) {
+            menu.$master.css('width', menu.$master.width() + 'px'); // do this because the width may change when items are hidden
+            menu.allowed_items = Math.ceil(menu.$master.height() / 26); // 26 is the list item height
+        }
         menu.resetList();
     });
 });
