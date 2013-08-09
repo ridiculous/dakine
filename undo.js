@@ -143,7 +143,7 @@ function Undo() {
                             }
                         },
                         error: function (e) {
-                            console.log('error restoring transactions. ' + e);
+                            console.log('error requesting undo from server. ' + e);
                         }
                     });
                 });
