@@ -10,40 +10,124 @@
  *     <li class="controllable"><a href="#">Item 5</a></li>
  *     <li class="controllable"><a href="#">Item 6</a></li>
  *  </ul>
+ *  OR
+ *  <div class="controlled">
+ *  <ul class="menu">
+ *     <li>Menu Header</li>
+ *     <li class="controllable"><a href="#">...</a></li>
+ *     <li class="controllable"><a href="#">...</a></li>
+ *  </ul>
+ *  <ul class="menu">
+ *     <li>Menu Header 2</li>
+ *     <li class="controllable"><a href="#">...</a></li>
+ *     <li class="controllable"><a href="#">...</a></li>
+ *  </ul>
+ *  </div>
+ * 
+ * Usage:
+ * var long_menu = new LongMenu()
+ *          , $items = $menu.find('ul').children()
+ *          , item_count = $items.length
+ *          , window_h = $(window).height()
+ *          , item_height = 0;
+ *
+ *      $items.each(function () {
+ *          item_height += $(this).outerHeight();
+ *      });
+ *
+ *      // divide the window height by the average item height
+ *      var allowed = Math.floor(window_h / (item_height / item_count));
+ *
+ *      if (item_count < allowed) {
+ *          return
+ *      }
+ *
+ *      long_menu.init('#' + $menu.attr('id'));
+ *      if (!long_menu.allowed_items) {
+ *          long_menu.setAllowedItems(allowed);
+ *      }
+ *      long_menu.resetList();
+ * 
  * @constructor
  */
 function LongMenu() {
     var menu = this;
 
-    this.$master = $('.controlled');
-    this.$items = this.$master.find('.controllable');
+    this.delay = 80; // ms
+    this.$master = [];
+    this.$items = [];
+    this.$up = [];
+    this.$down = [];
     this.moving = null;
     this.allowed_items = 0;
+    this.up_arrow_html = '<li class="up-mover"><a href="javascript:;"><b class="up-caret"></b></a></li>';
+    this.down_arrow_html = '<li class="down-mover"><a href="javascript:;"><b class="caret"></b></a></li>';
 
-    this.moveUp = function () {
-        var available_items = this.$items.filter(':visible');
+    this.moveUp = function (once) {
+        if (this.$down.hasClass('inactive')) {
+            return;
+        }
+
+        var available_items = this.$items.filter(':visible')
+            , last_item = available_items.last()
+            , next_item = last_item.next('.controllable')
+            , parents_next_item = last_item.parent().next().find('.controllable:first');
+
         clearTimeout(this.moving);
-        if (available_items.last().next('.controllable').length) {
-            available_items.first().hide().end().last().next('.controllable').show();
-            this.moving = setTimeout(function () {
-                menu.moveUp();
-            }, 80)
+
+        if (next_item.length) {
+            next_item.show();
+        } else if (parents_next_item.length) {
+            parents_next_item.show();
+        } else {
+            this.$down.addClass('inactive');
+        }
+
+        if (next_item.length || parents_next_item.length) {
+            available_items.first().hide();
+            this.$up.removeClass('inactive');
+            if (!once) {
+                this.moving = setTimeout(function () {
+                    menu.moveUp();
+                }, this.delay);
+            }
         }
     };
 
-    this.moveDown = function () {
-        var available_items = this.$items.filter(':visible');
+    this.moveDown = function (once) {
+        if (this.$up.hasClass('inactive')) {
+            return;
+        }
+
+        var available_items = this.$items.filter(':visible')
+            , first_item = available_items.first()
+            , prev_item = first_item.prev('.controllable')
+            , parents_prev_item = first_item.parent().prev().find('.controllable:last');
+
         clearTimeout(this.moving);
-        if (available_items.first().prev('.controllable').length) {
-            available_items.last().hide().end().first().prev('.controllable').show();
-            this.moving = setTimeout(function () {
-                menu.moveDown();
-            }, 80)
+
+        if (prev_item.length) {
+            prev_item.show();
+        } else if (parents_prev_item.length) {
+            parents_prev_item.show();
+        } else {
+            this.$up.addClass('inactive');
+        }
+        if (prev_item.length || parents_prev_item.length) {
+            available_items.last().hide();
+            this.$down.removeClass('inactive');
+            if (!once) {
+                this.moving = setTimeout(function () {
+                    menu.moveDown();
+                }, this.delay)
+            }
         }
     };
 
     this.resetList = function () {
         this.$items.show();
+        this.$down.removeClass('inactive');
+        this.$up.addClass('inactive');
         this.hideOverflow();
     };
 
@@ -51,39 +135,59 @@ function LongMenu() {
         this.$items.slice(this.allowed_items, this.$items.length).hide();
     };
 
-}
-$(function () {
-    var menu = new LongMenu();
+    this.init = function (master) {
+        this.$master = $(master);
+        this.$items = this.$master.find('.controllable');
 
-    if (!menu.$master.length) {
-        return;
-    }
+        if (!this.$master.length) {
+            return false;
+        }
 
-    menu.$master.hover(function () {
+        $(this.up_arrow_html).insertBefore(this.$items.first());
+        $(this.down_arrow_html).insertAfter(this.$items.last());
 
-        $(this)
-            .off()
-            .on('mousemove', function (e) {
-                // TODO: calculate this dynamically based on UL position on page
-                if (e.clientY < 187 && e.clientY > 144) {
-                    menu.moveDown();
-                } else if (e.clientY < 567 && e.clientY > 525) {
-                    menu.moveUp();
-                } else {
-                    clearTimeout(menu.moving);
-                }
+        this.$up = this.$master.find('.up-mover');
+        this.$down = this.$master.find('.down-mover');
+
+        this.bindElements();
+        return true;
+    };
+
+    /**
+     * Onclick is for tablets and such that dont support mouseover
+     */
+    this.bindElements = function () {
+        this.$down
+            .on('click', function (e) {
+                menu.moveUp(true);
+                e.stopPropagation();
+            })
+            .on('mouseover', function () {
+                menu.moveUp();
+            })
+            .on('mouseout', function () {
+                clearTimeout(menu.moving);
             });
 
-    }, function () {
-        clearTimeout(menu.moving);
-    });
+        this.$up
+            .on('click', function (e) {
+                menu.moveDown(true);
+                e.stopPropagation();
+            })
+            .on('mouseover', function () {
+                menu.moveDown();
+            })
+            .on('mouseout', function () {
+                clearTimeout(menu.moving);
+            });
+    };
 
-    $('.menu-header').on('click', function () {
-        // only do this the first time
-        if (!menu.allowed_items) {
-            menu.$master.css('width', menu.$master.width() + 'px'); // do this because the width may change when items are hidden
-            menu.allowed_items = Math.ceil(menu.$master.height() / 26); // 26 is the list item height
-        }
-        menu.resetList();
-    });
-});
+    this.setAllowedItems = function (item_count) {
+        this.allowed_items = item_count - 1; // -1 for up / down arrows;
+    };
+
+    // To prevent width from changing when items are hidden
+    this.saveWidth = function () {
+        this.$master.css('width', this.$master.width() + 'px');
+    };
+}
