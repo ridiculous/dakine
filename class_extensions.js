@@ -37,10 +37,10 @@ Array.prototype.compacted = function () {
 };
 
 Array.prototype.find = function (value) {
-    var found = false;
+    var found = -1;
     for (var i = 0; i < this.length; i++) {
         if (this[i] == value) {
-            found = true;
+            found = i;
         }
     }
     return found;
@@ -79,3 +79,30 @@ Array.prototype.findAndRemoveObject = function (value, key) {
         }
     }
 };
+
+Array.prototype.takeSample = function () {
+    var n = Math.round((Math.random() * (this.length - 1)));
+    return this[n];
+};
+
+/*
+ *  Test for +takeSample+ works
+ */
+//var a = [10, 212, 321, 49, 52, 67],
+//    transfer = [],
+//    i = a.takeSample(), x = 0;
+//
+//while (transfer.length !== a.length) {
+//    if (transfer.find(i) === -1) {
+//        transfer.push(i);
+//    }
+//    i = a.takeSample();
+//    console.log('sample ' + i)
+//    console.log('transfer ' + transfer)
+//    x++;
+//    if (x > 1000) {
+//        break;
+//    }
+//}
+//
+//console.log(x) // should be between 9 & 30 to find them all
