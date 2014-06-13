@@ -5,7 +5,11 @@ module ActiveRecordExtensions
 
   module ClassMethods
     def except_for(*ids)
-      where("#{quoted_table_name}.id NOT IN (?)", ids)
+      scoped.where("#{quoted_table_name}.id NOT IN (?)", ids)
+    end
+    
+    def since(time)
+      scoped.where("#{quoted_table_name}.created_at > ?", time)
     end
   end
 end
