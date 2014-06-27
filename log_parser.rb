@@ -31,8 +31,7 @@ class LogParser
 
   def scan
     File.open(file, 'r') do |f|
-      while f.gets
-        line = f.gets
+      while line = f.gets
         if line =~ LINE_PATTERN
           lines << LineItem.new($1, $2, $3, line)
         end
