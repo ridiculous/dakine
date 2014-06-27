@@ -11,6 +11,10 @@ module ActiveRecordExtensions
     def since(time)
       scoped.where("#{quoted_table_name}.created_at > ?", time)
     end
+    
+    def before(time)
+      scoped.where("#{quoted_table_name}.created_at < ?", time)
+    end
   end
 end
 
