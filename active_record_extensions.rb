@@ -19,6 +19,10 @@ module ActiveRecordExtensions
     def between(start_at, end_at)
       since(start_at).before(end_at)
     end
+    
+    def latest
+      scoped.order(:id).last
+    end
   end
 end
 
