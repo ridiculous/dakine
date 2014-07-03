@@ -21,7 +21,7 @@ module ActiveRecordExtensions
     end
     
     def latest
-      scoped.order(:id).last
+      scoped.order("#{quoted_table_name}.id ASC").last
     end
   end
 end
