@@ -2,6 +2,14 @@ module ActiveRecordExtensions
   def self.included(base)
     base.extend(ClassMethods)
   end
+  
+  def associations?
+    associations.present?
+  end
+
+  def associations
+    reflections.select { |key, _| send(key).present? rescue nil }.keys
+  end
 
   module ClassMethods
     def except_for(*ids)
