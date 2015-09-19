@@ -4,7 +4,7 @@ module ActiveRecordExtensions
   end
   
   def associations?
-    associations.present?
+    associations.any?
   end
 
   def associations
@@ -26,10 +26,6 @@ module ActiveRecordExtensions
     
     def between(start_at, end_at)
       since(start_at).before(end_at)
-    end
-    
-    def latest
-      scoped.order("#{quoted_table_name}.id ASC").last
     end
   end
 end
